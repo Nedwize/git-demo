@@ -1,32 +1,37 @@
 import './styles.css';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function App() {
+  const [searchTerm, setSearchTerm] = useState('');
   const [data, setData] = useState('');
-  const [time, setTime] = useState();
   const [loading, setLoading] = useState(false);
 
   const handleChange = async (e) => {
-    setTime(false);
-    setTimeout(async () => {
-      setTime(true);
-      if (time) {
+    setSearchTerm(e.target.value);
+  };
+
+  useEffect(() => {
+    const timeoutId = setTimeout(async () => {
+      if (searchTerm) {
         setLoading(true);
         const response = await fetch(
-          `https://api.github.com/search/repositories?q=${e.target.value}`
+          `https://api.github.com/search/repositories?q=${searchTerm}`
         );
         const data = await response.json();
         setData(data);
         setLoading(false);
       }
     }, 500);
-    console.log(e.target.value);
-  };
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [searchTerm]);
 
   return (
     <div className="App">
       <h1>Search Code Repo on GitHub</h1>
-      <input type="text" onChange={handleChange} />
+      <input type="text" value={searchTerm} onChange={handleChange} />
       {loading ? (
         <p>loading...</p>
       ) : !data ? null : (
